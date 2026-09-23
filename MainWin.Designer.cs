@@ -660,13 +660,18 @@
             65536});
             this.IntervalNum.Location = new System.Drawing.Point(280, 216);
             this.IntervalNum.Maximum = new decimal(new int[] {
-            5,
+            3600,
             0,
             0,
             0});
             this.IntervalNum.Name = "IntervalNum";
             this.IntervalNum.Size = new System.Drawing.Size(70, 31);
             this.IntervalNum.TabIndex = 15;
+            this.IntervalNum.Value = new decimal(new int[] {
+            223,
+            0,
+            0,
+            65536});
             // 
             // FontLabel
             // 

@@ -103,6 +103,34 @@ namespace NovelpiaDownloader
         private volatile bool _cancelRequested;
         private readonly List<DownloadJob> _queue = new List<DownloadJob>();
         private bool _queueRunning;
+        private readonly Random _delayRandom = new Random();
+
+        private int ShortDelayMilliseconds(int maximum = 5000)
+        {
+            lock (_delayRandom)
+                return _delayRandom.Next(1000, maximum + 1);
+        }
+
+        private bool WaitForDelay(int milliseconds)
+        {
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            while (true)
+            {
+                if (_cancelRequested || _hadFatalError) return false;
+                long remaining = milliseconds - timer.ElapsedMilliseconds;
+                if (remaining <= 0) return true;
+                Thread.Sleep((int)Math.Min(100, remaining));
+            }
+        }
+
+        private int NextChapterDelay(float interval, ref double offset)
+        {
+            // Bounded AR(1): rho = 0.8, uniform innovations in [-2, 2].
+            // Starting at zero keeps the offset within [-10, 10].
+            lock (_delayRandom)
+                offset = 0.8 * offset + 2 * (2 * _delayRandom.NextDouble() - 1);
+            return (int)(Math.Max(0, interval + offset) * 1000);
+        }
 
         private class DownloadJob
         {
@@ -432,6 +460,7 @@ namespace NovelpiaDownloader
                     while (get_content)
                     {
                         if (_cancelRequested) break;
+                        if (!WaitForDelay(ShortDelayMilliseconds(3000))) break;
                         string data = $"novel_no={novelNo}&sort=DOWN&page={page}";
                         string resp = PostRequest("https://novelpia.com/proc/episode_list", novelpia.loginkey, data, "https://novelpia.com/");
                         var chapters = Regex.Matches(resp, @"id=""bookmark_(\d+)""></i>(.+?)</b>.+?>(EP\.(\d+)|BONUS)<", RegexOptions.Singleline);
@@ -780,6 +809,11 @@ namespace NovelpiaDownloader
             int retry = _retryCount;
             for (int attempt = 0; attempt <= retry; attempt++)
             {
+                if ((attempt > 0 && !WaitForDelay(ShortDelayMilliseconds())) || _cancelRequested || _hadFatalError)
+                {
+                    Interlocked.Increment(ref _progress_skip);
+                    return;
+                }
                 try
                 {
                     string resp = PostRequest($"https://novelpia.com/proc/viewer_data/{chapterId}", novelpia.loginkey, null, "https://novelpia.com/");
@@ -901,7 +935,7 @@ namespace NovelpiaDownloader
                                     string image_url = imatch.Groups[1].Value;
                                     string imgPath = Path.Combine(Path.GetDirectoryName(jsonPath), $"img_{imageNo}.bin");
                                     images.SetPath(imageNo, imgPath);
-                                    if (!_cancelRequested && !_hadFatalError)
+                                    if (WaitForDelay(ShortDelayMilliseconds()))
                                         DownloadImage(image_url, imgPath, Lang.T("illustration"), countProgress: false);
                                     textStr = Regex.Replace(textStr, @"<img.+?src="".+?"".+?>",
                                         $"<img alt=\"{imageNo}\" src=\"../Images/{imageNo}.__EXT__\" width=\"100%\"/>");
@@ -1065,7 +1099,11 @@ namespace NovelpiaDownloader
             int retry = _retryCount;
             for (int attempt = 0; attempt <= retry; attempt++)
             {
-                if (_cancelRequested || _hadFatalError) { if (countProgress) Interlocked.Increment(ref _progress_skip); return; }
+                if ((attempt > 0 && !WaitForDelay(ShortDelayMilliseconds())) || _cancelRequested || _hadFatalError)
+                {
+                    if (countProgress) Interlocked.Increment(ref _progress_skip);
+                    return;
+                }
                 try
                 {
                     var request = (HttpWebRequest)WebRequest.Create(url);
@@ -1109,6 +1147,7 @@ namespace NovelpiaDownloader
 
         private void ExecuteThreads(List<Thread> threads, int batch_size, float interval)
         {
+            double offset = 0;
             for (int i = 0; i < threads.Count; i += batch_size)
             {
                 if (_cancelRequested || _hadFatalError) break;
@@ -1119,7 +1158,7 @@ namespace NovelpiaDownloader
                 for (int j = 0; j < limit; j++)
                     threads[i + j].Join();
                 if (_cancelRequested || _hadFatalError) break;
-                Thread.Sleep((int)(interval * 1000));
+                if (i + limit < threads.Count && !WaitForDelay(NextChapterDelay(interval, ref offset))) break;
             }
         }
 
