@@ -125,10 +125,12 @@ namespace NovelpiaDownloader
 
         private int NextChapterDelay(float interval, ref double offset)
         {
-            // Bounded AR(1): rho = 0.8, uniform innovations in [-2, 2].
-            // Starting at zero keeps the offset within [-10, 10].
+            // Bounded AR(1): rho = 0.8. The minimum of three uniform draws
+            // has mean 0.25, so the asymmetric innovation still has mean zero.
+            // Starting at zero keeps the offset within [-5, 15].
             lock (_delayRandom)
-                offset = 0.8 * offset + 2 * (2 * _delayRandom.NextDouble() - 1);
+                offset = 0.8 * offset + 4 * Math.Min(_delayRandom.NextDouble(),
+                    Math.Min(_delayRandom.NextDouble(), _delayRandom.NextDouble())) - 1;
             return (int)(Math.Max(0, interval + offset) * 1000);
         }
 
