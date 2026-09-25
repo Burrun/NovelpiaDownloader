@@ -257,8 +257,6 @@
             // GothicCheck
             //
             this.GothicCheck.AutoSize = true;
-            this.GothicCheck.Checked = true;
-            this.GothicCheck.CheckState = System.Windows.Forms.CheckState.Checked;
             this.GothicCheck.Location = new System.Drawing.Point(220, 184);
             this.GothicCheck.Name = "GothicCheck";
             this.GothicCheck.Size = new System.Drawing.Size(109, 29);

@@ -565,7 +565,14 @@ namespace NovelpiaDownloader
                             jsonPath = Path.Combine(directory, $"{chapterNo.ToString().PadLeft(4, '0')}.json");
                             label = $"EP.{chapterNo:D4}";
                         }
-                        string encodedName = HttpUtility.HtmlEncode(ch.chapterName);
+                        string chapterTitle = ch.chapterName;
+                        if (saveAsEpub)
+                        {
+                            chapterTitle = Regex.Replace(chapterTitle, @"(\d+\s*~\s*\d+)화\b", "$1");
+                            if (!isBonus && !Regex.IsMatch(HttpUtility.HtmlDecode(chapterTitle), @"(?:\bEP\.?\s*\d+\b|(?:제\s*)?\d+\s*(?:화|회|장|편)\b|^\s*\d+(?:\s*~\s*\d+)?(?:\s|\.|$))", RegexOptions.IgnoreCase))
+                                chapterTitle = $"EP {ch.epNo}. {chapterTitle}";
+                        }
+                        string encodedName = HttpUtility.HtmlEncode(chapterTitle);
                         threads.Add(new Thread(() =>
                         {
                             DownloadChapter(ch.chapterId, ch.chapterName, jsonPath, label);
@@ -671,15 +678,15 @@ namespace NovelpiaDownloader
 
                         for (int i = 0; i < entries.Count; i++)
                         {
-                            var (n, d) = entries[i];
-                            string s = Encoding.UTF8.GetString(d);
+                            var entry = entries[i];
+                            string s = Encoding.UTF8.GetString(entry.data);
                             s = Regex.Replace(s, @"src=""\.\./Images/(\d+)\.__EXT__""", m =>
                             {
                                 int k = int.Parse(m.Groups[1].Value);
                                 string e2 = imageExts.ContainsKey(k) ? imageExts[k] : "jpg";
                                 return $"src=\"../Images/{k}.{e2}\"";
                             });
-                            entries[i] = (n, Encoding.UTF8.GetBytes(s));
+                            entries[i] = (entry.name, Encoding.UTF8.GetBytes(s));
                         }
                         if (hasCover)
                             opf.Append($"<meta name=\"cover\" content=\"cover-img\"/>\n");
