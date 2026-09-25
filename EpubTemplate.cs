@@ -11,50 +11,50 @@ namespace NovelpiaDownloader
             "</rootfiles>\n" +
             "</container>\n";
         public static string sgctoc = "div.sgc-toc-title {\n" +
-            "font-size: 2em;\n" +
+            "font-size: 1em;\n" +
             "font-weight: bold;\n" +
             "margin-bottom: 1em;\n" +
-            "text-align: center;\n" +
-            "text-indent: 1.0em;\n" +
+            "text-align: left;\n" +
+            "text-indent: 0;\n" +
             "margin-top: 1.0em;\n" +
             "}\n" +
             "\n" +
             "div.sgc-toc-level-1 {\n" +
             "margin-left: 0em;\n" +
-            "text-indent: 1.0em;\n" +
+            "text-indent: 0;\n" +
             "margin-top: 0.2em;\n" +
             "line-height: 1.6em;\n" +
             "}\n" +
             "\n" +
             "div.sgc-toc-level-2 {\n" +
-            "margin-left: 2em;\n" +
+            "margin-left: 0;\n" +
             "}\n" +
             "\n" +
             "div.sgc-toc-level-3 {\n" +
-            "margin-left: 2em;\n" +
+            "margin-left: 0;\n" +
             "}\n" +
             "\n" +
             "div.sgc-toc-level-4 {\n" +
-            "margin-left: 2em;\n" +
+            "margin-left: 0;\n" +
             "}\n" +
             "\n" +
             "div.sgc-toc-level-5 {\n" +
-            "margin-left: 2em;\n" +
+            "margin-left: 0;\n" +
             "}\n" +
             "\n" +
             "div.sgc-toc-level-6 {\n" +
-            "margin-left: 2em;\n" +
+            "margin-left: 0;\n" +
             "}\n";
         public static string _baseStylesheet = ".border01 {\n" +
             "\n" +
             "border: 2px solid black;\n" +
-            "padding: 1.0em;\n" +
-            "margin: 1.0em;\n" +
+            "padding: 0;\n" +
+            "margin: 1.0em 0;\n" +
             "line-height: 1.6em;\n" +
             "font-size: 1.0em;\n" +
             "font-style: normal;\n" +
             "font-weight: normal;\n" +
-            "text-align: justify;\n" +
+            "text-align: left;\n" +
             "}\n" +
             "\n" +
             "\n" +
@@ -76,7 +76,7 @@ namespace NovelpiaDownloader
             "\n" +
             "h1{\n" +
             "display: block;\n" +
-            "font-size: 1.2em;\n" +
+            "font-size: 1em;\n" +
             "font-style: normal;\n" +
             "font-weight: bold;\n" +
             "line-height: 1.6em;\n" +
@@ -84,7 +84,7 @@ namespace NovelpiaDownloader
             "margin-left: 0;\n" +
             "margin-right: 0;\n" +
             "margin-top: 1.6em;\n" +
-            "text-align: center;\n" +
+            "text-align: left;\n" +
             "text-indent: 0;\n" +
             "padding-left: 0;\n" +
             "padding-right: 0;\n" +
@@ -110,8 +110,8 @@ namespace NovelpiaDownloader
             "margin-left: 0;\n" +
             "margin-right: 0;\n" +
             "margin-top: 0.2em;\n" +
-            "text-align: justify;\n" +
-            "text-indent: 1.0em;\n" +
+            "text-align: left;\n" +
+            "text-indent: 0;\n" +
             "padding-left: 0;\n" +
             "padding-right: 0;\n" +
             "}\n" +
@@ -119,7 +119,7 @@ namespace NovelpiaDownloader
             "/*크게, 작게*/\n" +
             "\n" +
             ".t09{\n" +
-            "font-size: 0.9em;\n" +
+            "font-size: 1em;\n" +
             "font-style: normal;\n" +
             "font-weight: normal;\n" +
             "line-height: 1.6em;\n" +
@@ -133,8 +133,8 @@ namespace NovelpiaDownloader
             "}\n" +
             "\n" +
             ".t12{\n" +
-            "font-family: 'ng',serif;\n" +
-            "font-size: 1.2em;\n" +
+            "font-family: inherit;\n" +
+            "font-size: 1em;\n" +
             "font-style: normal;\n" +
             "font-weight: bold;\n" +
             "line-height: 1.6em;\n" +
@@ -142,8 +142,8 @@ namespace NovelpiaDownloader
             "margin-left: 0;\n" +
             "margin-right: 0;\n" +
             "margin-top: 0.2em;\n" +
-            "text-align: justify;\n" +
-            "text-indent: 1em;\n" +
+            "text-align: left;\n" +
+            "text-indent: 0;\n" +
             "padding-left: 0;\n" +
             "padding-right: 0;\n" +
             "}\n" +
@@ -152,14 +152,14 @@ namespace NovelpiaDownloader
             "\n" +
             ".ridicenter{\n" +
             "display: block;\n" +
-            "text-align : center;\n" +
+            "text-align: left;\n" +
             "}\n" +
             ".c{\n" +
-            "text-align:center;\n" +
+            "text-align:left;\n" +
             "}\n" +
             "\n" +
             ".r{\n" +
-            "text-align: right;\n" +
+            "text-align: left;\n" +
             "}\n" +
             "\n" +
             ".b{\n" +
@@ -171,7 +171,7 @@ namespace NovelpiaDownloader
             "}\n" +
             "\n" +
             ".ridibox {\n" +
-            "padding: 0.5em 1em ;\n" +
+            "padding: 0.5em 0;\n" +
             "}\n" +
             "\n" +
             "/*흐리게*/\n" +
@@ -217,13 +217,13 @@ namespace NovelpiaDownloader
             "padding-left:0;\n" +
             "padding-right:0;\n" +
             "padding-top:0;\n" +
-            "text-align:center;\n" +
+            "text-align:left;\n" +
             "text-indent:0;\n" +
             "}\n" +
             "\n" +
             "/*루비문자*/\n" +
             "rt {\n" +
-            "font-size: 0.85em;\n" +
+            "font-size: 1em;\n" +
             "font-style: normal;\n" +
             "font-weight: normal;\n" +
             "}\n" +
@@ -232,12 +232,12 @@ namespace NovelpiaDownloader
             "/*양 옆 들여쓰기*/\n" +
             "\n" +
             ".pad07 {\n" +
-            "padding:0 0.7em;\n" +
+            "padding:0;\n" +
             "}\n" +
             "/*이미지에 패딩 주고 싶을 때*/\n" +
             "\n" +
-            "div#wrap{margin:5pt;}\n" +
-            "div#wrap2{ margin: 5pt; text-align: center; }\n" +
+            "div#wrap{margin:0;}\n" +
+            "div#wrap2{ margin: 0; text-align: center; }\n" +
             "\n" +
             "/*각주처리*/\n" +
             "\n" +
@@ -245,19 +245,19 @@ namespace NovelpiaDownloader
             ".footnote p\n" +
             "{\n" +
             "text-indent:0;\n" +
-            "font-size:0.85em;\n" +
+            "font-size:1em;\n" +
             "line-height:1.6em;\n" +
             "}\n" +
             "\n" +
             "span.br {\n" +
             "color:gray;\n" +
-            "font-size: 0.9em;\n" +
+            "font-size: 1em;\n" +
             "}\n" +
             "\n" +
             "/*글상자*/\n" +
             "\n" +
             ".ridiborder {\n" +
-            "padding: 0.5em 1em;\n" +
+            "padding: 0.5em 0;\n" +
             "border-radius: 0.5em;\n" +
             "border: 0.1em solid #868a8e;\n" +
             "}\n" +
@@ -266,7 +266,7 @@ namespace NovelpiaDownloader
             "\n" +
             "\n" +
             ".ridipost {\n" +
-            "padding: 0.5em 1em;\n" +
+            "padding: 0.5em 0;\n" +
             "background-color: #FFFF00;\n" +
             "border-radius: 0.5em;\n" +
             "}\n";
@@ -276,10 +276,7 @@ namespace NovelpiaDownloader
             var sb = new StringBuilder();
             sb.AppendLine("body{");
             sb.AppendLine("margin:0;");
-            if (vertical)
-                sb.AppendLine("padding:0 1em 0 0;");
-            else
-                sb.AppendLine("padding:0;");
+            sb.AppendLine("padding:0;");
             if (vertical)
             {
                 if (gothic)
@@ -301,7 +298,9 @@ namespace NovelpiaDownloader
             }
             sb.AppendLine("}");
             const string oldBody = "body{\nmargin:0;\npadding:0;\nfont-family: 'KoPub바탕체 Light', 'KoPub돋움체 Light';\n}\n";
-            return _baseStylesheet.Replace(oldBody, sb.ToString());
+            return _baseStylesheet.Replace(oldBody, sb.ToString()) +
+                "\nbody, body * { text-align: left !important; text-indent: 0 !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }\n" +
+                ".cover, .img, div#wrap2 { text-align: center !important; }\n";
         }
 
         public static string toc = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
