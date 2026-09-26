@@ -1,0 +1,6 @@
+# may contain your LOGINKEY / password
+config.json
+.novelpia_cache/
+*.epub
+*.txt
+!requirements.txt
