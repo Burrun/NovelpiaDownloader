@@ -1,0 +1,6 @@
+downloads/
+.novelpia_cache/
+*.epub
+*.txt
+!requirements.txt
+.state/
