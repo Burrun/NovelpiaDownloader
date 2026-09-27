@@ -25,34 +25,51 @@ The wizard has three steps:
 2. **Queue**: add as many novels as you like (URL or number, EP range, BONUS mode), then remove or start.
 3. **Options**: format (EPUB by default), output folder, and optional advanced settings.
 
-Settings are saved to `config.json` in the current folder. The password is saved only if you say yes.
+Your answers are saved to `python/config.json` (settings) and `python/.env` (login).
+The password is saved only if you say yes.
 
-## config.json
+## Settings: `config.json` and `.env`
 
-No config file is shipped. To set defaults such as your login email, copy the template:
+Both files are in the `python/` folder. They're used no matter which folder you run the program from.
+
+| File | In git? | Holds |
+|---|---|---|
+| `config.json` | yes, as defaults | format, output folder, pacing, file naming, EPUB options (no secrets) |
+| `.env` | **no** (git-ignored) | your login |
+| `.env.example` | yes | template for `.env` |
+
+**Login setup:** copy the template and fill it in:
 
 ```bash
-cp config.example.json config.json      # Windows: copy config.example.json config.json
+cp .env.example .env        # Windows: copy .env.example .env
 ```
 
-Then edit it:
+```ini
+NOVELPIA_EMAIL=you@example.com
+NOVELPIA_PASSWORD=your-password
+NOVELPIA_LOGINKEY=
+```
+
+Fill in either email + password, or a LOGINKEY.
+Environment variables with the same names override `.env`, and command-line flags override both.
+
+**`config.json` keys:**
 
 | Key | Meaning |
 |---|---|
-| `email`, `wd` | login email / password (`wd` may stay empty; the wizard asks, or use `NOVELPIA_PASSWORD`) |
-| `loginkey` | LOGINKEY cookie, instead of email/password |
 | `format` | `"epub"` or `"txt"` |
-| `output_dir` | where files are saved |
+| `output_dir` | where files are saved (relative paths start from the folder you run in) |
 | `include_notice`, `download_image`, `keep_html`, `remove_blank`, `compress`, `vertical`, `gothic` | same as the Windows options |
 | `mapping_path` | font mapping JSON |
 | `include_novel_no`, `name_ep_range`, `mark_finished` | file name parts (`12345_Title 1~250 (완)`) |
 | `bonus_never`, `bonus_always` | default BONUS mode |
-| `interval_num`, `retry_num` | mean seconds between chapters, retries |
-| `gap_min`, `gap_max` | break between novels in minutes |
+| `interval_num`, `retry_num` | mean seconds between chapters, retries per request |
+| `gap_min`, `gap_max` | break between novels, in minutes |
 | `stop_on_error` | stop a novel at the first failed chapter |
 
-The program reads `./config.json` from the folder you run it in. Use `-c path/to/config.json` for another file.
-`config.json` is git-ignored because it can contain your password or LOGINKEY.
+You can drop in a `config.json` from the Windows version.
+Its `email` / `wd` / `loginkey` are moved into `.env` the next time settings are saved.
+Use `-c other.json` for a different settings file. Its `.env` is read from the same folder.
 
 ## Command line
 

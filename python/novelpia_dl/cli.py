@@ -109,7 +109,7 @@ def wizard_login(client, ui, cfg):
         if state == "email":
             cfg["email"] = email
             cfg["loginkey"] = client.loginkey
-            if Confirm.ask("Save the password in config.json? [dim](plain text)[/]", default=False):
+            if Confirm.ask("Save the password in python/.env? [dim](plain text, git-ignored)[/]", default=False):
                 cfg["wd"] = password
         return state
     if choice == "2":
@@ -218,11 +218,12 @@ def build_parser():
     p.add_argument("novels", nargs="*", help="novel number or URL, optionally NO:FROM-TO (e.g. 12345:1-50)")
     p.add_argument("-i", "--interactive", action="store_true", help="force the wizard")
     p.add_argument("-q", "--queue-file", help="text file, one novel (NO or NO:FROM-TO) per line")
-    p.add_argument("-c", "--config", default="config.json", help="config file (default: ./config.json)")
+    p.add_argument("-c", "--config", default=str(config.DEFAULT_CONFIG),
+                   help="settings file (default: python/config.json; login is read from .env next to it)")
 
     g = p.add_argument_group("login")
     g.add_argument("--email")
-    g.add_argument("--password", help="or set NOVELPIA_PASSWORD")
+    g.add_argument("--password", help="or NOVELPIA_PASSWORD in python/.env")
     g.add_argument("--loginkey")
 
     g = p.add_argument_group("what to download")
@@ -291,7 +292,7 @@ def run_flags(args, ui, cfg, opts):
     client = Novelpia()
     state = login(client, ui,
                   args.email or cfg.get("email"),
-                  args.password or os.environ.get("NOVELPIA_PASSWORD") or cfg.get("wd"),
+                  args.password or cfg.get("wd"),
                   args.loginkey or cfg.get("loginkey"))
     if args.save_config:
         if state == "email":

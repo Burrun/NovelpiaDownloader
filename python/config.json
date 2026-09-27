@@ -1,0 +1,22 @@
+{
+  "format": "epub",
+  "output_dir": "downloads",
+  "include_notice": false,
+  "remove_blank": false,
+  "keep_html": true,
+  "compress": true,
+  "download_image": true,
+  "stop_on_error": false,
+  "include_novel_no": false,
+  "name_ep_range": true,
+  "mark_finished": true,
+  "vertical": false,
+  "gothic": false,
+  "interval_num": 22.3,
+  "retry_num": 3,
+  "gap_min": 5.0,
+  "gap_max": 10.0,
+  "mapping_path": "",
+  "bonus_never": false,
+  "bonus_always": false
+}
