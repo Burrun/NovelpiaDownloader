@@ -239,6 +239,8 @@ class Downloader:
             return Result(job, "failed", message="novel page could not be loaded")
         job.title = textproc.novel_title(page) or job.title or job.novel_no
         author = textproc.novel_author(page)
+        if hasattr(self.ui, "job_title"):
+            self.ui.job_title(job)
         self.ui.info(f"[title]{_esc(job.title)}[/]" + (f" [dim]· {_esc(author)}[/]" if author else ""))
 
         chapters = []
@@ -294,8 +296,10 @@ class Downloader:
             return f"../Images/{name}"
 
         try:
-            with self.ui.chapter_progress(len(chapters)):
-                for c in chapters:
+            with self.ui.chapter_progress(len(chapters), opts.interval):
+                self.ui.chapters_init([c.log_label for c in chapters])
+                for i, c in enumerate(chapters):
+                    self.ui.chapter_mark(i, "now")
                     jpath = cache / f"{c.stem}.json"
                     data, cached = None, False
                     if jpath.exists():
@@ -312,6 +316,7 @@ class Downloader:
                             jpath.write_text(data, encoding="utf-8")
                     if data is None:
                         failed += 1
+                        self.ui.chapter_mark(i, "fail")
                         self.ui.advance(ok, failed)
                         if opts.stop_on_error:
                             raise Aborted()
@@ -326,6 +331,7 @@ class Downloader:
                     except Exception as e:
                         failed += 1
                         self.ui.item_fail(c.log_label, f"parse error: {e}")
+                        self.ui.chapter_mark(i, "fail")
                         self.ui.advance(ok, failed)
                         jpath.unlink(missing_ok=True)
                         if opts.stop_on_error:
@@ -334,6 +340,7 @@ class Downloader:
                     built.append((c.toc_title, c.stem, body))
                     ok += 1
                     self.ui.item_ok(c.log_label, cached)
+                    self.ui.chapter_mark(i, "cached" if cached else "ok")
                     self.ui.advance(ok, failed)
         except Aborted:
             aborted = True

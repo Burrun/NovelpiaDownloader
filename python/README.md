@@ -66,6 +66,44 @@ python -m novelpia_dl --help                       # all options
 Each novel is `NUMBER`, a novel URL, or `NUMBER:FROM-TO` (`12345:1-50`, `12345:10-`, `12345:-30`).
 A queue file has one novel per line. `#` starts a comment.
 
+## Background downloading (attach / detach)
+
+Downloads run in a **background process**, so you can close the window,
+come back later, or add novels while it's running.
+
+```bash
+python -m novelpia_dl 12345 67890     # queue, start in the background, watch it
+python -m novelpia_dl attach          # watch again from any terminal
+python -m novelpia_dl status          # one-time status + finished list
+python -m novelpia_dl stop            # stop after the current chapter (resumes later)
+python -m novelpia_dl start           # start it again
+python -m novelpia_dl 777 -d          # add a novel to the queue without watching
+```
+
+While watching, press **Ctrl+C** for the menu:
+
+| Key | Action |
+|---|---|
+| `a` | add a novel to the queue (while the current one keeps downloading) |
+| `r` | remove a waiting novel |
+| `p` | flip through the EP list pages (`n` / `p` / page number / `f` follow current) |
+| `h` | finished novels |
+| `s` | stop (or start) the downloader |
+| `d` | detach: leave the view, keep downloading |
+| `c` | go back to watching |
+
+The watch screen shows:
+- the current novel with a progress bar and a steady ETA (your interval until a few chapters are done, then the real pace)
+- the current **page** of the EP list (`✓` done, `▶` now, `·` waiting), which follows the chapter being downloaded
+- recent messages and the queue
+
+Running `python -m novelpia_dl` with no arguments opens the watch screen if something is queued or running.
+Otherwise it starts the wizard.
+`--foreground` runs the old way, all in the current terminal.
+
+The queue, status and full log (`log.txt`) are kept in `python/.state/`.
+If the computer restarts in the middle of a novel, `python -m novelpia_dl start` continues it from the cache.
+
 ## How it paces requests
 
 - **Always one thread.** Chapters are downloaded one at a time.
@@ -73,6 +111,7 @@ A queue file has one novel per line. `#` starts a comment.
   This is the same drifting random delay the Windows version uses.
 - **Between novels in a queue** it takes a random **5–10 minute** break
   (`--gap-min` / `--gap-max`), with a countdown on screen.
+  This also holds if a novel is added after the downloader has already finished.
 - Failed requests are retried (`--retry`, default 3) after a short random wait.
 
 ## File names

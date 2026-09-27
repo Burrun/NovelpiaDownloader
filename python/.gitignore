@@ -3,3 +3,4 @@ downloads/
 *.epub
 *.txt
 !requirements.txt
+.state/

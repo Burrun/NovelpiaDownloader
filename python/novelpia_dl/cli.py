@@ -9,7 +9,7 @@ from rich.markup import escape
 from rich.panel import Panel
 from rich.prompt import Confirm, FloatPrompt, IntPrompt, Prompt
 
-from . import config, textproc
+from . import attach, config, service, textproc
 from .client import Novelpia
 from .downloader import Downloader, Job, parse_novel_ref
 from .ui import UI
@@ -200,7 +200,9 @@ def run_wizard(args, ui, cfg, opts):
     config.save(args.config, cfg, opts)
     if not Confirm.ask(f"Start downloading {len(jobs)} novel(s)?", default=True):
         return 0
-    return execute(dl, ui, jobs, opts)
+    if args.foreground:
+        return execute(dl, ui, jobs, opts)
+    return submit(args, ui, jobs, opts, client.loginkey if state != "none" else None)
 
 
 # -- flags -------------------------------------------------------------------------
@@ -213,10 +215,19 @@ def build_parser():
         epilog="examples:\n"
                "  python -m novelpia_dl                      # wizard\n"
                "  python -m novelpia_dl 12345 67890:1-50     # queue two novels\n"
-               "  python -m novelpia_dl -q list.txt --txt    # one novel per line",
+               "  python -m novelpia_dl -q list.txt --txt    # one novel per line\n"
+               "  python -m novelpia_dl 12345 -d             # add to the queue, don't watch\n\n"
+               "background downloader:\n"
+               "  python -m novelpia_dl attach    watch it (Ctrl+C: add novel / remove / stop / detach)\n"
+               "  python -m novelpia_dl status    one-time status\n"
+               "  python -m novelpia_dl stop      stop after the current chapter (resumes later)\n"
+               "  python -m novelpia_dl start     start it again",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("novels", nargs="*", help="novel number or URL, optionally NO:FROM-TO (e.g. 12345:1-50)")
     p.add_argument("-i", "--interactive", action="store_true", help="force the wizard")
+    p.add_argument("-d", "--detach", action="store_true", help="queue and return; keep downloading in the background")
+    p.add_argument("--foreground", action="store_true",
+                   help="download in this terminal only (old mode: no attach/detach, no adding while running)")
     p.add_argument("-q", "--queue-file", help="text file, one novel (NO or NO:FROM-TO) per line")
     p.add_argument("-c", "--config", default=str(config.DEFAULT_CONFIG),
                    help="settings + login file (default: python/config.json)")
@@ -301,10 +312,31 @@ def run_flags(args, ui, cfg, opts):
             cfg["loginkey"] = args.loginkey
         config.save(args.config, cfg, opts, args.bonus)
         ui.print(f"[dim]settings saved to {escape(args.config)}[/]")
-    dl = Downloader(client, opts, ui)
     settings_panel(ui, opts, state)
+    if not args.foreground:
+        return submit(args, ui, jobs, opts, client.loginkey if state != "none" else None)
     ui.queue_table(jobs)
-    return execute(dl, ui, jobs, opts)
+    return execute(Downloader(client, opts, ui), ui, jobs, opts)
+
+
+def submit(args, ui, jobs, opts, loginkey):
+    """Hand the novels to the background downloader, then watch it (unless --detach)."""
+    added = service.add_jobs(jobs, opts)
+    for e in added:
+        ui.print(f"[ok]+ queued[/] #{e['id']} {escape(service.job_label(e))}")
+    if len(added) < len(jobs):
+        ui.warn(f"{len(jobs) - len(added)} novel(s) were already in the queue.")
+    running = service.worker_alive()
+    if not service.start_worker(args.config, loginkey):
+        ui.error(f"Could not start the background downloader. See {service.STATE / 'worker.out'} "
+                 "or use --foreground.")
+        return 1
+    if running:
+        ui.info("Added to the downloader that is already running.")
+    if args.detach:
+        ui.info("Downloading in the background. Watch with: [bold]python -m novelpia_dl attach[/]")
+        return 0
+    return attach.attach(ui.console, args.config)
 
 
 def execute(dl, ui, jobs, opts):
@@ -319,7 +351,50 @@ def execute(dl, ui, jobs, opts):
     return 0 if all(r.status == "done" for r in results) else 1
 
 
+COMMANDS = ("attach", "status", "stop", "start", "worker")
+
+
+def run_command(cmd, argv):
+    p = argparse.ArgumentParser(prog=f"novelpia_dl {cmd}")
+    p.add_argument("-c", "--config", default=str(config.DEFAULT_CONFIG))
+    args = p.parse_args(argv)
+    if cmd == "worker":
+        return service.worker_main(args.config)
+    ui = UI()
+    if cmd == "attach":
+        ui.banner()
+        try:
+            return attach.attach(ui.console, args.config)
+        except KeyboardInterrupt:
+            return 0
+    if cmd == "status":
+        attach.show_status(ui.console)
+        return 0
+    if cmd == "stop":
+        if not service.worker_alive():
+            ui.info("The downloader is not running.")
+            return 0
+        service.request_stop()
+        ui.info("Stopping after the current step. Waiting novels stay in the queue; "
+                "[bold]python -m novelpia_dl start[/] resumes.")
+        return 0
+    if cmd == "start":
+        if service.worker_alive():
+            ui.info("Already running. [bold]python -m novelpia_dl attach[/] to watch.")
+            return 0
+        if not service.read_queue()["jobs"]:
+            ui.info("Queue is empty — add novels first.")
+            return 0
+        ok = service.start_worker(args.config)
+        (ui.info if ok else ui.error)("Started." if ok else "Could not start; see .state/worker.out")
+        return 0 if ok else 1
+    return 2
+
+
 def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] in COMMANDS:
+        return run_command(argv[0], argv[1:])
     args = build_parser().parse_args(argv)
     ui = UI()
     ui.banner()
@@ -330,6 +405,9 @@ def main(argv=None):
             setattr(opts, attr, getattr(args, flag))
     opts.gap_max = max(opts.gap_min, opts.gap_max)
     try:
+        if not (args.interactive or args.novels or args.queue_file or args.foreground) and (
+                service.worker_alive() or service.read_queue()["jobs"]):
+            return attach.attach(ui.console, args.config)   # something is queued/running: show it
         if args.interactive or not (args.novels or args.queue_file):
             if not sys.stdin.isatty():
                 ui.error("No novels given and no terminal for the wizard. See --help.")

@@ -7,8 +7,9 @@ from rich import box
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
-from rich.progress import (BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn,
-                           TimeElapsedColumn, TimeRemainingColumn)
+from rich.progress import (BarColumn, MofNCompleteColumn, Progress, ProgressColumn, SpinnerColumn,
+                           TextColumn, TimeElapsedColumn)
+from rich.text import Text
 from rich.table import Table
 from rich.theme import Theme
 
@@ -25,6 +26,27 @@ STATUS_STYLE = {"done": "ok", "partial": "warn", "failed": "fail", "cancelled": 
 def fmt_secs(s):
     s = int(round(s))
     return f"{s // 60}:{s % 60:02d}" if s >= 60 else f"{s}s"
+
+
+def eta_seconds(done, total, elapsed, interval):
+    """Remaining time. Until a few chapters are done, assume the configured pace."""
+    left = total - done
+    if left <= 0:
+        return 0
+    per = elapsed / done if done >= 3 else interval + 2
+    return left * per
+
+
+def fmt_eta(seconds):
+    s = int(seconds)
+    h, m = divmod(s // 60, 60)
+    return f"~{h}h {m:02d}m" if h else (f"~{m}m" if m else f"~{s}s")
+
+
+class EtaColumn(ProgressColumn):
+    def render(self, task):
+        eta = eta_seconds(task.completed, task.total or 0, task.elapsed or 0, task.fields.get("interval", 20))
+        return Text(f"eta {fmt_eta(eta)}", style="grey50")
 
 
 class UI:
@@ -71,7 +93,7 @@ class UI:
 
     # -- chapter progress --------------------------------------------------------
     @contextmanager
-    def chapter_progress(self, total):
+    def chapter_progress(self, total, interval=20):
         progress = Progress(
             SpinnerColumn(),
             TextColumn("[title]{task.description}"),
@@ -79,19 +101,24 @@ class UI:
             MofNCompleteColumn(),
             TextColumn("[ok]✓{task.fields[ok]}[/] [fail]✗{task.fields[fail]}[/]"),
             TimeElapsedColumn(),
-            TextColumn("[dim]eta[/]"),
-            TimeRemainingColumn(),
+            EtaColumn(),
             TextColumn("{task.fields[status]}"),
             console=self.console, transient=False,
         )
         with progress:
             self._progress = progress
-            self._task = progress.add_task("chapters", total=total, ok=0, fail=0, status="")
+            self._task = progress.add_task("chapters", total=total, ok=0, fail=0, status="", interval=interval)
             try:
                 yield self
             finally:
                 self._progress = None
                 self._task = None
+
+    def chapters_init(self, labels):
+        """Chapter list for the paged EP view (background mode only)."""
+
+    def chapter_mark(self, index, state):
+        pass
 
     def advance(self, ok, fail):
         if self._progress:
