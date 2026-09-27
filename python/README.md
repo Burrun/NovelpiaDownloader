@@ -27,6 +27,33 @@ The wizard has three steps:
 
 Settings are saved to `config.json` in the current folder. The password is saved only if you say yes.
 
+## config.json
+
+No config file is shipped. To set defaults such as your login email, copy the template:
+
+```bash
+cp config.example.json config.json      # Windows: copy config.example.json config.json
+```
+
+Then edit it:
+
+| Key | Meaning |
+|---|---|
+| `email`, `wd` | login email / password (`wd` may stay empty; the wizard asks, or use `NOVELPIA_PASSWORD`) |
+| `loginkey` | LOGINKEY cookie, instead of email/password |
+| `format` | `"epub"` or `"txt"` |
+| `output_dir` | where files are saved |
+| `include_notice`, `download_image`, `keep_html`, `remove_blank`, `compress`, `vertical`, `gothic` | same as the Windows options |
+| `mapping_path` | font mapping JSON |
+| `include_novel_no`, `name_ep_range`, `mark_finished` | file name parts (`12345_Title 1~250 (완)`) |
+| `bonus_never`, `bonus_always` | default BONUS mode |
+| `interval_num`, `retry_num` | mean seconds between chapters, retries |
+| `gap_min`, `gap_max` | break between novels in minutes |
+| `stop_on_error` | stop a novel at the first failed chapter |
+
+The program reads `./config.json` from the folder you run it in. Use `-c path/to/config.json` for another file.
+`config.json` is git-ignored because it can contain your password or LOGINKEY.
+
 ## Command line
 
 ```bash
