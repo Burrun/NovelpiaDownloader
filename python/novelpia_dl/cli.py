@@ -159,7 +159,8 @@ def wizard_options(opts):
     opts.include_notice = b("Include author notices?", opts.include_notice)
     opts.remove_blank = b("Remove blank lines?", opts.remove_blank)
     opts.name_with_no = b("Put novel number in file name?", opts.name_with_no)
-    opts.name_with_range = b("Put episode range in file name?", opts.name_with_range)
+    opts.name_with_range = b("Put EP range in file name? [dim](제목 1~250)[/]", opts.name_with_range)
+    opts.mark_finished = b("Add (완) to finished novels?", opts.mark_finished)
     opts.stop_on_error = b("Stop a novel on the first failed chapter?", opts.stop_on_error)
     opts.interval = FloatPrompt.ask("Mean seconds between chapters", default=opts.interval)
     opts.retry = IntPrompt.ask("Retries per request", default=opts.retry)
@@ -242,7 +243,10 @@ def build_parser():
     g.add_argument("--gothic", action=argparse.BooleanOptionalAction, default=None)
     g.add_argument("--remove-blank", action=argparse.BooleanOptionalAction, default=None)
     g.add_argument("--name-no", action=argparse.BooleanOptionalAction, default=None, help="novel no. in file name")
-    g.add_argument("--name-range", action=argparse.BooleanOptionalAction, default=None, help="range in file name")
+    g.add_argument("--name-range", action=argparse.BooleanOptionalAction, default=None,
+                   help="EP range in file name, e.g. 'Title 1~250' (default on)")
+    g.add_argument("--mark-finished", action=argparse.BooleanOptionalAction, default=None,
+                   help="add ' (완)' when the novel is finished and the last EP is included (default on)")
     g.add_argument("--font-map", help="font mapping JSON")
 
     g = p.add_argument_group("pacing (always 1 thread)")
@@ -259,6 +263,7 @@ FLAG_TO_OPT = {
     "fmt": "fmt", "output": "output_dir", "notice": "include_notice", "images": "download_image",
     "styling": "keep_html", "compress": "compress", "vertical": "vertical", "gothic": "gothic",
     "remove_blank": "remove_blank", "name_no": "name_with_no", "name_range": "name_with_range",
+    "mark_finished": "mark_finished",
     "font_map": "font_map", "interval": "interval", "retry": "retry", "gap_min": "gap_min",
     "gap_max": "gap_max", "stop_on_error": "stop_on_error",
 }

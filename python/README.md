@@ -49,6 +49,19 @@ A queue file has one novel per line. `#` starts a comment.
   (`--gap-min` / `--gap-max`), with a countdown on screen.
 - Failed requests are retried (`--retry`, default 3) after a short random wait.
 
+## File names
+
+Files are named `Title FIRST~LAST.epub` using **EP numbers**. BONUS episodes and notices don't count.
+If the novel is finished (완결) and the file includes its last EP, ` (완)` is added:
+
+```
+전생했더니 슬라임 1~250 (완).epub   # finished, whole novel
+전생했더니 슬라임 1~50.epub         # only part of it
+```
+
+Turn these off with `--no-name-range` / `--no-mark-finished`, or in the wizard's advanced options.
+`--name-no` puts the novel number in front (`12345_Title 1~250.epub`).
+
 ## Resume
 
 Downloaded chapters are cached in `<output>/.novelpia_cache/<novel no>/`.

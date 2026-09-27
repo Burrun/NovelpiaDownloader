@@ -28,7 +28,8 @@ class Options:
     download_image: bool = True
     stop_on_error: bool = False
     name_with_no: bool = False
-    name_with_range: bool = False
+    name_with_range: bool = True      # "Title 1~250"
+    mark_finished: bool = True        # "Title 1~250 (완)" when the last EP is included
     vertical: bool = False
     gothic: bool = False
     interval: float = 22.3            # mean seconds between chapters
@@ -139,13 +140,16 @@ class Downloader:
         self.ui.item_fail(what, last)
         return None
 
-    def target_path(self, job):
-        title = safe_filename(job.title or job.novel_no)
+    def target_path(self, job, first_ep=None, last_ep=None, finished=False):
+        """e.g. "제목 1~250 (완).epub" — EP numbers only (BONUS/notices don't count)."""
+        name = safe_filename(job.title or job.novel_no)
         if self.opts.name_with_no:
-            title = f"{job.novel_no}_{title}"
-        if self.opts.name_with_range and (job.from_n is not None or job.to_n is not None):
-            title = f"{title}_{job.range_text()}"
-        return Path(self.opts.output_dir) / f"{title}.{self.opts.fmt}"
+            name = f"{job.novel_no}_{name}"
+        if self.opts.name_with_range and first_ep is not None:
+            name = f"{name} {first_ep}~{last_ep}"
+        if self.opts.mark_finished and finished:
+            name = f"{name} (완)"
+        return Path(self.opts.output_dir) / f"{name}.{self.opts.fmt}"
 
     def fetch_title(self, novel_no):
         try:
@@ -243,7 +247,8 @@ class Downloader:
                 label = f"[{NOTICE_LABEL}] {name}"
                 chapters.append(Chapter("NOTICE", cid, name, 0, f"notice_{i:04d}", label, label))
 
-        chapters += self.select(job, self.list_chapters(job))
+        listed = self.list_chapters(job)
+        chapters += self.select(job, listed)
         if not any(c.kind != "NOTICE" for c in chapters):
             return Result(job, "failed", message="no chapters in the selected range")
         if opts.fmt == "epub":
@@ -256,7 +261,14 @@ class Downloader:
         out_dir.mkdir(parents=True, exist_ok=True)
         cache = out_dir / ".novelpia_cache" / job.novel_no
         cache.mkdir(parents=True, exist_ok=True)
-        path = self.target_path(job)
+        eps = [c.ep_no for c in chapters if c.kind == "EP"]
+        finished = textproc.is_finished(page)
+        # Pagination stops once it passes the requested last EP, so a file that
+        # holds the highest EP seen really holds the novel's final EP.
+        has_last_ep = bool(eps) and max(eps) == max((c.ep_no for c in listed if c.kind == "EP"), default=0)
+        self.ui.info("Status: " + ("[ok]완결 (finished)[/]" if finished else "ongoing"))
+        path = self.target_path(job, min(eps, default=None), max(eps, default=None),
+                                finished and has_last_ep)
 
         cover = None
         if opts.fmt == "epub" and opts.download_image:

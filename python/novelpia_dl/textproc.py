@@ -15,6 +15,8 @@ NOTICE_RE = re.compile(r"""location='/viewer/(\d+)';"[^>]*><b>(.+?)</b>""", re.S
 EPISODE_RE = re.compile(r'id="bookmark_(\d+)"></i>(.+?)</b>.+?>(EP\.(\d+)|BONUS)<', re.S)
 
 TAG_RE = re.compile(r"</?[^>]+>")
+# "완결" badge on the novel page (class b_comp, or a span whose whole text is 완결).
+FINISHED_RE = re.compile(r'class="[^"]*\bb_comp\b|<span[^>]*>\s*완결\s*</span>')
 
 
 def plain(s):
@@ -30,6 +32,10 @@ def novel_title(page):
 def novel_author(page):
     m = AUTHOR_RE.search(page)
     return html.unescape(m.group(1)) if m else ""
+
+
+def is_finished(page):
+    return bool(FINISHED_RE.search(page))
 
 
 def cover_url(page):
