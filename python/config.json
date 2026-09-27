@@ -1,4 +1,7 @@
 {
+  "email": "",
+  "wd": "",
+  "loginkey": "",
   "format": "epub",
   "output_dir": "downloads",
   "include_notice": false,

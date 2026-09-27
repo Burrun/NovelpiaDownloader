@@ -25,38 +25,19 @@ The wizard has three steps:
 2. **Queue**: add as many novels as you like (URL or number, EP range, BONUS mode), then remove or start.
 3. **Options**: format (EPUB by default), output folder, and optional advanced settings.
 
-Your answers are saved to `python/config.json` (settings) and `python/.env` (login).
+Your settings and login are saved to `python/config.json`.
 The password is saved only if you say yes.
 
-## Settings: `config.json` and `.env`
+## Settings: `config.json`
 
-Both files are in the `python/` folder. They're used no matter which folder you run the program from.
-
-| File | In git? | Holds |
-|---|---|---|
-| `config.json` | yes, as defaults | format, output folder, pacing, file naming, EPUB options (no secrets) |
-| `.env` | **no** (git-ignored) | your login |
-| `.env.example` | yes | template for `.env` |
-
-**Login setup:** copy the template and fill it in:
-
-```bash
-cp .env.example .env        # Windows: copy .env.example .env
-```
-
-```ini
-NOVELPIA_EMAIL=you@example.com
-NOVELPIA_PASSWORD=your-password
-NOVELPIA_LOGINKEY=
-```
-
-Fill in either email + password, or a LOGINKEY.
-Environment variables with the same names override `.env`, and command-line flags override both.
-
-**`config.json` keys:**
+Everything, including your login, is in `python/config.json`.
+It's used no matter which folder you run the program from.
+You can also copy in your `config.json` from the Windows version.
 
 | Key | Meaning |
 |---|---|
+| `email`, `wd` | login email / password (or pass `--password`, or set `NOVELPIA_PASSWORD`) |
+| `loginkey` | LOGINKEY cookie, instead of email/password |
 | `format` | `"epub"` or `"txt"` |
 | `output_dir` | where files are saved (relative paths start from the folder you run in) |
 | `include_notice`, `download_image`, `keep_html`, `remove_blank`, `compress`, `vertical`, `gothic` | same as the Windows options |
@@ -67,9 +48,10 @@ Environment variables with the same names override `.env`, and command-line flag
 | `gap_min`, `gap_max` | break between novels, in minutes |
 | `stop_on_error` | stop a novel at the first failed chapter |
 
-You can drop in a `config.json` from the Windows version.
-Its `email` / `wd` / `loginkey` are moved into `.env` the next time settings are saved.
-Use `-c other.json` for a different settings file. Its `.env` is read from the same folder.
+Keys the Python version doesn't use, such as `language` and `thread_num`, are ignored and kept as they are.
+Use `-c other.json` for a different settings file.
+
+> ⚠️ Once you fill in `email` / `wd`, don't commit `config.json` to a public repo.
 
 ## Command line
 
@@ -77,7 +59,7 @@ Use `-c other.json` for a different settings file. Its `.env` is read from the s
 python -m novelpia_dl 12345                        # one novel, EPUB
 python -m novelpia_dl 12345 67890:1-50 111:100-    # a queue of three novels
 python -m novelpia_dl -q list.txt --txt -o books   # queue from a file, TXT, into ./books
-python -m novelpia_dl --email me@x.com 12345       # password from NOVELPIA_PASSWORD or config.json
+python -m novelpia_dl --email me@x.com 12345       # password from config.json or NOVELPIA_PASSWORD
 python -m novelpia_dl --help                       # all options
 ```
 

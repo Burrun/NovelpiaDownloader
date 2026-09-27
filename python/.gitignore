@@ -1,5 +1,3 @@
-# login secrets
-.env
 downloads/
 .novelpia_cache/
 *.epub
